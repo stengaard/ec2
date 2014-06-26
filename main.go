@@ -15,6 +15,9 @@ import (
 var logger = log.New(os.Stdout, "", log.LstdFlags)
 var usage = `swiss army tool knife for AWS EC2
 
+ec2 can list and connect to instances. It searches the
+EC2 API to fetch addresses of the instances.
+
 ec2 looks for credentials in this order:
   * --awsfile on the command line
   * AWS_FILE environment variable
