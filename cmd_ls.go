@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -55,7 +56,7 @@ func cmdLs(ctx *cli.Context) {
 
 	printInstances(inst, append(headers, xtra...), !ctx.Bool("no-headers"))
 
-	fmt.Printf("Found %d hosts in %0.1fsec\n", len(inst), time.Now().Sub(start).Seconds())
+	fmt.Fprintf(os.Stderr, "Found %d hosts in %0.1fsec\n", len(inst), time.Now().Sub(start).Seconds())
 
 }
 

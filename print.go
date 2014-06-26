@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 
@@ -56,13 +57,13 @@ func printInstances(insts []*ec2.Instance, fields []string, header bool) {
 	var line string
 	if header {
 		line = fmt.Sprintf(template, out...)
-		fmt.Print(line)
+		fmt.Fprint(os.Stderr, line)
 		buf := []byte(line)
 		for i := 0; i < len(buf)-1; i++ {
 			buf[i] = '-'
 		}
 		line = string(buf)
-		fmt.Print(line)
+		fmt.Fprint(os.Stderr, line)
 	}
 
 	// print instances values
@@ -75,7 +76,7 @@ func printInstances(insts []*ec2.Instance, fields []string, header bool) {
 	}
 
 	if header {
-		fmt.Print(line)
+		fmt.Fprint(os.Stderr, line)
 	}
 
 }
