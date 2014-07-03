@@ -154,9 +154,17 @@ func searchEc2(client *ec2.EC2, line ...string) <-chan *ec2.Instance {
 }
 
 func getInstances(client *ec2.EC2, line ...string) []*ec2.Instance {
-	inst := []*ec2.Instance{}
+	instMap := map[string]*ec2.Instance{}
 	for i := range searchEc2(client, line...) {
-		inst = append(inst, i)
+		instMap[i.InstanceId] = i
 	}
+
+	inst := make([]*ec2.Instance, len(instMap))
+	j := 0
+	for _, i := range instMap {
+		inst[j] = i
+		j++
+	}
+
 	return inst
 }
