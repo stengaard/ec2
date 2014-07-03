@@ -33,7 +33,7 @@ sequentially.
 
 	sshCliCmd = cli.Command{
 		Name:        "ssh",
-		Usage:       "ssh to instance",
+		Usage:       sshUsage,
 		Description: sshDesc,
 		Action:      cmdSsh,
 		Flags: []cli.Flag{

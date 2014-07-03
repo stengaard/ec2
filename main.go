@@ -1,9 +1,12 @@
 // ec2 is simple AWS EC2 utility to list and connect to
-// EC2 instances based
+// EC2 instances based.
+//
+// See http://github.com/stengaard/ec2
 package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"time"
@@ -12,7 +15,7 @@ import (
 	"launchpad.net/goamz/aws"
 )
 
-var logger = log.New(os.Stdout, "", log.LstdFlags)
+var logger = log.New(os.Stderr, "", 0)
 var usage = `swiss army tool knife for AWS EC2
 
 ec2 can list and connect to instances. It searches the
@@ -40,6 +43,7 @@ func main() {
 	app.Commands = []cli.Command{
 		lsCliCmd,
 		sshCliCmd,
+		runCliCmd,
 	}
 
 	app.Flags = []cli.Flag{
@@ -49,14 +53,21 @@ func main() {
 			Usage: ".awssecret file - ",
 		},
 		cli.BoolFlag{
-			Name:  "verbose",
-			Usage: "verbose output",
+			Name:  "quiet,q",
+			Usage: "quiet down, please",
 		},
 		cli.StringFlag{
 			Name:  "region,r",
 			Usage: "Which AWS region to use",
 			Value: aws.USEast.Name,
 		},
+	}
+
+	app.Before = func(ctx *cli.Context) error {
+		if ctx.GlobalBool("quiet") {
+			logger = log.New(ioutil.Discard, "", 0)
+		}
+		return nil
 	}
 
 	app.Run(os.Args)
@@ -69,4 +80,8 @@ func exit(s string) {
 	}
 	fmt.Fprintf(os.Stderr, s)
 	os.Exit(1)
+}
+
+func exitErr(err error) {
+	exit(err.Error())
 }

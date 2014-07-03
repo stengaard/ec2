@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -14,17 +12,18 @@ var lsUsage = `list instances in your ec2 account
 Search against the EC2 API for any and all matches to your search query
 `
 
-var defaultHeaders = []string{"InstanceId", "T:Name", "DNSName"}
+var defaultHeaders = cli.StringSlice{"InstanceId", "T:Name", "DNSName"}
+var defaultHeaderLen = len(defaultHeaders)
 
 var lsCliCmd = cli.Command{
 	Name:   "ls",
 	Usage:  "list instances ec2",
 	Action: cmdLs,
 	Flags: []cli.Flag{
-		cli.StringSliceFlag{
+		cli.GenericFlag{
 			Name:  "H,headers",
 			Usage: "Columns to display",
-			Value: (*cli.StringSlice)(&defaultHeaders),
+			Value: &defaultHeaders,
 		},
 		cli.StringSliceFlag{
 			Name:  "x,add-headers",
@@ -53,10 +52,13 @@ func cmdLs(ctx *cli.Context) {
 		headers = expandStringSlice(ctx.StringSlice("headers"))
 		xtra    = expandStringSlice(ctx.StringSlice("add-headers"))
 	)
+	if ctx.IsSet("headers") || ctx.IsSet("H") {
+		headers = headers[defaultHeaderLen:]
+	}
 
 	printInstances(inst, append(headers, xtra...), !ctx.Bool("no-headers"))
 
-	fmt.Fprintf(os.Stderr, "Found %d hosts in %0.1fsec\n", len(inst), time.Now().Sub(start).Seconds())
+	logger.Printf("Found %d hosts in %0.1fsec\n", len(inst), time.Now().Sub(start).Seconds())
 
 }
 

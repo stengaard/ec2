@@ -70,10 +70,8 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --awsfile, -a '$HOME/.awssecret'	.awssecret file -
-   --verbose				verbose output
+   --quiet, -q				quiet down, please
    --region, -r 'us-east-1'		Which AWS region to use
    --version, -v			print the version
    --help, -h				show help
 ```
-
-

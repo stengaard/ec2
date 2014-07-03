@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 
@@ -57,13 +56,13 @@ func printInstances(insts []*ec2.Instance, fields []string, header bool) {
 	var line string
 	if header {
 		line = fmt.Sprintf(template, out...)
-		fmt.Fprint(os.Stderr, line)
+		logger.Print(line)
 		buf := []byte(line)
 		for i := 0; i < len(buf)-1; i++ {
 			buf[i] = '-'
 		}
 		line = string(buf)
-		fmt.Fprint(os.Stderr, line)
+		logger.Print(line)
 	}
 
 	// print instances values
@@ -76,7 +75,7 @@ func printInstances(insts []*ec2.Instance, fields []string, header bool) {
 	}
 
 	if header {
-		fmt.Fprint(os.Stderr, line)
+		logger.Print(line)
 	}
 
 }
@@ -120,6 +119,9 @@ func dehyphenize(s string) string {
 }
 
 func getFieldVal(inst *ec2.Instance, name string) (string, string, error) {
+
+	// There must be a better way to do this
+
 	if len(name) < 2 {
 		// no fields or tag can be < 2 chars in the
 		// canonical form
@@ -143,22 +145,27 @@ func getFieldVal(inst *ec2.Instance, name string) (string, string, error) {
 	t := reflect.TypeOf(*inst)
 	for i := 0; i < t.NumField(); i++ {
 		// get bar from `xml:"foo>bo>bar,baz,buz"`
-		t := t.Field(i).Tag.Get("xml")
-		if t == "" {
+		f := t.Field(i)
+		if strings.ToLower(name) == strings.ToLower(f.Name) && f.Type.Kind() == reflect.String {
+			vf := reflect.ValueOf(*inst).Field(i)
+			return f.Name, vf.String(), nil
+		}
+
+		tag := f.Tag.Get("xml")
+		if tag == "" {
 			continue
 		}
 
-		ts := strings.Split(t, ">")
-		t = ts[len(ts)-1]
+		ts := strings.Split(tag, ">")
+		tag = ts[len(ts)-1]
 
-		ts = strings.Split(t, ",")
-		t = ts[0]
+		ts = strings.Split(tag, ",")
+		tag = ts[0]
 
-		if t == "" {
+		if tag == "" {
 			continue
 		}
-		structTags[t] = i
-
+		structTags[tag] = i
 	}
 
 	v := reflect.ValueOf(*inst)
@@ -195,11 +202,14 @@ func getFieldVal(inst *ec2.Instance, name string) (string, string, error) {
 		return "SecurityGroups", strings.Join(groups, ", "), nil
 	}
 
-	// try the raw field name
+	if strings.ToLower(name) == "state" {
+		return "State", inst.State.Name, nil
+	}
+
+	// hail mary
 	if !field.IsValid() {
 		field = v.FieldByName(name)
 		fname = name
-
 	}
 
 	// still no luck - bum out
