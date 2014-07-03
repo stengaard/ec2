@@ -1,10 +1,46 @@
-ec2
-===
+ec2 - a toolbelt
+================
 
 ec2 is helper tool to get info on those pesky EC2 instances.
 
+Requirements
+============
+
+ - `go` (`1.2` should do fine).
+ - an `ssh-agent` running if you wanna do any sort of SSH stuff.
+ - patience.
+
+Features
+========
+
+Reasonably fast (bounded by the EC2 API mostly)
 ```
-ec2 -h
+$ ec2 ls > /dev/null
+InstanceId   T:Name                     DNSName
+------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
+Found 250 hosts in 1.3sec
+```
+Searches concurrently across several selectors if some is given
+```
+$ ec2 ls m1.small > /dev/null
+InstanceId   T:Name                 DNSName
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+Found 29 hosts in 1.3sec
+```
+
+
+Upcoming stuffs
+===============
+ - `ec2 run` that concurrently runs commands across filtered hosts
+
+
+How to run it
+==============
+
+```
+$ ec2 -h
 NAME:
    ec2 - swiss army tool knife for AWS EC2
 
@@ -40,34 +76,4 @@ GLOBAL OPTIONS:
    --help, -h				show help
 ```
 
-Requirements
-============
 
- - `go` (`1.2` should do fine).
- - an `ssh-agent` running if you wanna do any sort of SSH stuff.
- - patience.
-
-Features
-========
-
-Reasonably fast (bounded by the EC2 API mostly)
-```
-$ ec2 ls > /dev/null
-InstanceId   T:Name                     DNSName
-------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------
-Found 250 hosts in 1.3sec
-```
-Searches concurrently across several selectors if some is given
-```
-$ ec2 ls m1.small > /dev/null
-InstanceId   T:Name                 DNSName
--------------------------------------------------------------------------------
--------------------------------------------------------------------------------
-Found 29 hosts in 1.3sec
-```
-
-
-Upcoming stuffs
-===============
- - `ec2 run` that concurrently runs commands across filtered hosts
