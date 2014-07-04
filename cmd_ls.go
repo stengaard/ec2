@@ -17,7 +17,7 @@ var defaultHeaderLen = len(defaultHeaders)
 
 var lsCliCmd = cli.Command{
 	Name:   "ls",
-	Usage:  "list instances ec2",
+	Usage:  lsUsage,
 	Action: cmdLs,
 	Flags: []cli.Flag{
 		cli.GenericFlag{

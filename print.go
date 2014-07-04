@@ -194,7 +194,7 @@ func getFieldVal(inst *ec2.Instance, name string) (string, string, error) {
 	// TODO : alias map based solution
 	// map[string]func(inst) string, string
 	// hack for  security-groups,
-	if _, ok := secgroup[strings.ToLower(name)]; ok {
+	if secgroup[strings.ToLower(name)] {
 		groups := []string{}
 		for i := range inst.SecurityGroups {
 			groups = append(groups, inst.SecurityGroups[i].Name)
@@ -216,5 +216,5 @@ func getFieldVal(inst *ec2.Instance, name string) (string, string, error) {
 	if !field.IsValid() {
 		return "", "", fmt.Errorf("no such field %s", name)
 	}
-	return fname, field.String(), nil
+	return fname, fmt.Sprintf("%v", field.Interface()), nil
 }

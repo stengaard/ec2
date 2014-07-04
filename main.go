@@ -44,6 +44,7 @@ func main() {
 		lsCliCmd,
 		sshCliCmd,
 		runCliCmd,
+		scaleCmd,
 	}
 
 	app.Flags = []cli.Flag{
@@ -67,6 +68,7 @@ func main() {
 		if ctx.GlobalBool("quiet") {
 			logger = log.New(ioutil.Discard, "", 0)
 		}
+
 		return nil
 	}
 
