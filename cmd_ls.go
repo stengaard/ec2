@@ -16,9 +16,10 @@ var defaultHeaders = cli.StringSlice{"InstanceId", "T:Name", "DNSName"}
 var defaultHeaderLen = len(defaultHeaders)
 
 var lsCliCmd = cli.Command{
-	Name:   "ls",
-	Usage:  lsUsage,
-	Action: cmdLs,
+	Name:        "ls",
+	Description: lsUsage,
+	Usage:       "list instances in your ec2 account",
+	Action:      cmdLs,
 	Flags: []cli.Flag{
 		cli.GenericFlag{
 			Name:  "H,headers",
@@ -46,7 +47,8 @@ func cmdLs(ctx *cli.Context) {
 	args := ctx.Args()
 
 	start := time.Now()
-	inst := getInstances(client, args...)
+	post, pre := argsToSelector(args)
+	inst := getInstances(client, post, pre)
 
 	var (
 		headers = expandStringSlice(ctx.StringSlice("headers"))
@@ -58,7 +60,9 @@ func cmdLs(ctx *cli.Context) {
 
 	printInstances(inst, append(headers, xtra...), !ctx.Bool("no-headers"))
 
-	logger.Printf("Found %d hosts in %0.1fsec\n", len(inst), time.Now().Sub(start).Seconds())
+	if !ctx.Bool("no-headers") {
+		logger.Printf("Found %d hosts in %0.1fsec\n", len(inst), time.Now().Sub(start).Seconds())
+	}
 
 }
 

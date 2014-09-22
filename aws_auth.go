@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
-	"launchpad.net/goamz/aws"
-	"launchpad.net/goamz/ec2"
+	"github.com/goamz/goamz/aws"
+	"github.com/goamz/goamz/ec2"
 )
 
 func awsAuthFromFile(f string) (aws.Auth, error) {

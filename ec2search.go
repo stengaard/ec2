@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"strings"
-	"sync"
 
-	"launchpad.net/goamz/ec2"
+	"github.com/goamz/goamz/ec2"
 )
 
 // indentend lines are skipped as
@@ -102,61 +102,59 @@ func init() {
 	}
 }
 
-func searchEc2(client *ec2.EC2, line ...string) <-chan *ec2.Instance {
+func asEc2Filter(raw map[string][]string) *ec2.Filter {
+	f := ec2.NewFilter()
+	for key, value := range raw {
+		f.Add(key, value...)
+	}
+	return f
+}
+
+func searchEc2(client *ec2.EC2, searchTerm map[string][]string) <-chan *ec2.Instance {
 	c := make(chan *ec2.Instance)
-	filters := []*ec2.Filter{}
-	for _, term := range line {
-		values := strings.SplitN(term, "=", 2)
 
-		var filterKeys []string
-		if len(values) > 1 {
-			filterKeys = []string{values[0]}
-			term = values[1]
-		} else {
-			filterKeys = filterFields
+	var f *ec2.Filter
+	if len(searchTerm) == 0 {
+		f = ec2.NewFilter()
+		f.Add("instance-state-name", "running")
+	} else {
+		f = asEc2Filter(searchTerm)
+	}
+
+	go func(filter *ec2.Filter) {
+		resp, err := client.DescribeInstances(nil, filter)
+		if err != nil {
+			logger.Println(err)
+			return
 		}
-
-		for _, fil := range filterKeys {
-			f := ec2.NewFilter()
-			f.Add(fil, strings.Split(term, ",")...)
-			filters = append(filters, f)
+		for _, res := range resp.Reservations {
+			for _, inst := range res.Instances {
+				c <- &inst
+			}
 		}
-	}
-
-	// if no filters - get all instances
-	if len(filters) == 0 {
-		filters = []*ec2.Filter{nil}
-	}
-
-	wg := &sync.WaitGroup{}
-	for _, filter := range filters {
-		wg.Add(1)
-		go func(filter *ec2.Filter) {
-			defer wg.Done()
-			resp, err := client.Instances(nil, filter)
-			if err != nil {
-				logger.Println(err)
-			}
-			for _, res := range resp.Reservations {
-				for _, inst := range res.Instances {
-					c <- &inst
-				}
-			}
-		}(filter)
-	}
-
-	go func() {
-		wg.Wait()
 		close(c)
-	}()
+	}(f)
 
 	return c
 }
 
-func getInstances(client *ec2.EC2, line ...string) []*ec2.Instance {
+func getInstances(client *ec2.EC2, postfilter []string, filter map[string][]string) []*ec2.Instance {
 	instMap := map[string]*ec2.Instance{}
-	for i := range searchEc2(client, line...) {
-		instMap[i.InstanceId] = i
+	for i := range searchEc2(client, filter) {
+		include := false
+		if len(postfilter) == 0 {
+			include = true
+		}
+		for _, p := range postfilter {
+			if matches(i, p) {
+				include = true
+				break
+			}
+		}
+
+		if include {
+			instMap[i.InstanceId] = i
+		}
 	}
 
 	inst := make([]*ec2.Instance, len(instMap))
@@ -167,4 +165,44 @@ func getInstances(client *ec2.EC2, line ...string) []*ec2.Instance {
 	}
 
 	return inst
+}
+
+func matches(i *ec2.Instance, m string) bool {
+	matchs := func(in ...string) bool {
+		for _, b := range in {
+			if strings.Contains(strings.ToLower(b), strings.ToLower(m)) {
+				return true
+			}
+		}
+		return false
+	}
+
+	if matchs(i.InstanceId, i.ImageId, i.DNSName, i.IPAddress, i.AvailabilityZone,
+		i.InstanceType, i.KeyName, i.PrivateDNSName, i.PrivateIPAddress,
+		i.SubnetId, i.State.Name) {
+		return true
+	}
+
+	gs := make([]string, len(i.SecurityGroups)*2)
+	for n := 0; n < len(i.SecurityGroups)*2; n += 2 {
+		g := i.SecurityGroups[n/2]
+		gs[n] = g.Id
+		gs[n+1] = g.Name
+	}
+	if matchs(gs...) {
+		return true
+	}
+
+	tagvals := make([]string, len(i.Tags))
+	for n := 0; n < len(i.Tags); n++ {
+		tagvals[n] = i.Tags[n].Value
+	}
+	fmt.Println(tagvals)
+
+	return matchs(tagvals...)
+
+}
+
+type instance struct {
+	ID string `aws:"instance-id"`
 }

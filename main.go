@@ -9,10 +9,11 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/user"
 	"time"
 
 	"github.com/codegangsta/cli"
-	"launchpad.net/goamz/aws"
+	"github.com/goamz/goamz/aws"
 )
 
 var logger = log.New(os.Stderr, "", 0)
@@ -86,4 +87,20 @@ func exit(s string) {
 
 func exitErr(err error) {
 	exit(err.Error())
+}
+
+func exitf(msg string, args ...interface{}) {
+	exit(fmt.Sprintf(msg, args))
+}
+
+func getUser(ctx *cli.Context) string {
+	username := ctx.String("user")
+	if username == "" {
+		u, err := user.Current()
+		if err != nil {
+			exitf("username not set and could not be fetched: %s", err)
+		}
+		username = u.Username
+	}
+	return username
 }

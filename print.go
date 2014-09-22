@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"launchpad.net/goamz/ec2"
+	"github.com/goamz/goamz/ec2"
 )
 
 func printInstances(insts []*ec2.Instance, fields []string, header bool) {
@@ -80,7 +80,7 @@ func printInstances(insts []*ec2.Instance, fields []string, header bool) {
 
 }
 
-func name(i ec2.Instance) string {
+func name(i *ec2.Instance) string {
 	for _, t := range i.Tags {
 		if t.Key == "Name" {
 			return t.Value
