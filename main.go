@@ -45,7 +45,6 @@ func main() {
 		lsCliCmd,
 		sshCliCmd,
 		runCliCmd,
-		scaleCmd,
 	}
 
 	app.Flags = []cli.Flag{
