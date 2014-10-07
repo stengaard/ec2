@@ -65,10 +65,7 @@ func connectEc2(ctx *cli.Context) (*ec2.EC2, error) {
 	region := ctx.GlobalString("region")
 	reg, ok := aws.Regions[region]
 	if !ok {
-		reg, ok = aws.Regions[os.Getenv("AWS_REGION")]
-		if !ok {
-			return nil, fmt.Errorf("could not find AWS region")
-		}
+		return nil, fmt.Errorf("could not find AWS region")
 	}
 
 	return ec2.New(auth, reg), nil

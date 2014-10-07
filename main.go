@@ -58,9 +58,10 @@ func main() {
 			Usage: "quiet down, please",
 		},
 		cli.StringFlag{
-			Name:  "region,r",
-			Usage: "Which AWS region to use (env var: AWS_REGION)",
-			Value: aws.USEast.Name,
+			Name:   "region,r",
+			Usage:  "Which AWS region to use",
+			Value:  aws.USEast.Name,
+			EnvVar: "AWS_REGION",
 		},
 	}
 
