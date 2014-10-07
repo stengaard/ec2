@@ -59,7 +59,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "region,r",
-			Usage: "Which AWS region to use",
+			Usage: "Which AWS region to use (env var: AWS_REGION)",
 			Value: aws.USEast.Name,
 		},
 	}
