@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/goamz/goamz/ec2"
@@ -197,7 +196,6 @@ func matches(i *ec2.Instance, m string) bool {
 	for n := 0; n < len(i.Tags); n++ {
 		tagvals[n] = i.Tags[n].Value
 	}
-	fmt.Println(tagvals)
 
 	return matchs(tagvals...)
 
